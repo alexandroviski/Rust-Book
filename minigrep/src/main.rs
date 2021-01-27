@@ -1,5 +1,6 @@
+use ::std::error::Error;
 use std::env;
-use std::fs::File;
+use std::fs;
 use std::process;
 
 impl Config {
@@ -18,15 +19,21 @@ fn main() {
     // essa funcao nao aceita unicode
     let args: Vec<String> = env::args().collect();
 
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!("problem parsing arguments: {}", err);
+        process::exit(1);
+    });
     if let Err(e) = run(config) {
         println!("application error: {}", e);
         process::exit(1);
     }
+}
 
-    println!("searching for '{}'", config.query);
-    println!("in file {}", config.filename);
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.filename)?;
 
-    let mut _f = File::open(config.filename).expect("file not found");
+    println!("with texto:\n{}", contents);
+    Ok(())
 }
 
 struct Config {
